@@ -1,0 +1,30 @@
+{
+  "name": "discord-template",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">\r   <img src=\"https://user-images.githubusercontent.com/34040658/165858414-9aacbaa1-1ead-4728-9897-f50bea4388bd.png\" />\r   <h4> Small description of project </h4>",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fableverse/discord-template.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Fableverse/discord-template/issues"
+  },
+  "homepage": "https://github.com/Fableverse/discord-template#readme",
+  "dependencies": {
+    "@discordjs/rest": "^0.4.1",
+    "cron": "^2.0.0",
+    "discord-api-types": "^0.32.1",
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
