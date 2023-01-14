@@ -1,75 +1,64 @@
-const fs = require("fs");
-const commaNumber = require("comma-number");
-const TimeAgo = require("javascript-time-ago");
-const en = require("javascript-time-ago/locale/en");
-TimeAgo.addDefaultLocale(en);
-const timeAgo = new TimeAgo("en-US");
+const commaNumber = require('comma-number')
+const File = require('../../scripts/file')
 
 module.exports = {
-  name: "stats",
-  description: "",
-  aliases: ["s"],
+  name: 'stats',
+  description: '',
+  aliases: ['s'],
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const data = JSON.parse(
-      fs.readFileSync("./data/players.json", {
-        encoding: "utf8",
-        flag: "r",
-      })
-    );
+    const data = File.read()
 
-    let players = data.players;
+    let players = data.players
     for (let i = 0; i < players.length; i++) {
       if (players[i].id === message.author.id) {
-        let player = players[i];
-        let now = new Date();
-        let timeLapsed = (now - new Date(player.lastCheck)) / 1000;
-        let lastCheck = data.players[i].lastCheck;
+        let player = players[i]
+        data.players[i].lastCheck = new Date()
 
-        let addedCoins = timeLapsed * player.basePerSecond * (player.boost + 1);
-        data.players[i].coins += addedCoins;
-        data.players[i].lastCheck = new Date();
+        File.write(data)
 
-        fs.writeFileSync("./data/players.json", JSON.stringify(data), {
-          encoding: "utf8",
-          mode: 0o666,
-        });
-
-        let base = 100;
-        let count = data.players[i].boost + 1;
-        let rate = 2.75;
-        let boostCost = (base * count ** rate).toFixed(2);
+        let base = 100
+        let count = data.players[i].boost + 1
+        let rate = 2
+        let boostCost = (base * count ** rate).toFixed(2)
 
         message.reply(
-          ":coin: " +
+          ':coin: ` ' +
             commaNumber(data.players[i].coins.toFixed(2)) +
-            "         " +
-            ":arrow_double_up: x" +
+            ' `         ' +
+            ':arrow_double_up: ` x' +
             data.players[i].boost +
-            "         " +
-            ":alarm_clock: " +
-            commaNumber(
-              (player.basePerSecond * (player.boost + 1) * 60 * 60).toFixed(2)
-            ) +
-            " / hr" +
-            // "         " +
-            // ":recycle: 0" +
-            // "         " +
-            // ":gem: " +
-            // data.players[i].gems +
-            "\n\n**Next :arrow_double_up: cost :coin: " +
+            ' `         ' +
+            ':alarm_clock: ` ' +
+            commaNumber((0.02777777777 * (player.boost + 1) * 60 * 60 * (player.prestigePoints * 0.01 + 1)).toFixed(2)) +
+            ' / hr `' +
+            '         ' +
+            ':recycle: ` ' +
+            player.prestige +
+            ' `         ' +
+            ':gem: ` ' +
+            data.players[i].prestigePoints +
+            ' (+' +
+            (data.players[i].prestigePoints * 0.01).toFixed(2) +
+            ') `' +
+            '\n\n**Next :arrow_double_up: cost :coin: ` ' +
             commaNumber(boostCost) +
-            "**\n*Last check: " +
-            timeAgo.format(new Date(lastCheck), "round") +
-            "*"
-        );
-        return;
+            ' `**\n' +
+            '**Next Prestige will gain you :gem: ` ' +
+            data.players[i].boost +
+            ' `**'
+        )
+
+        return
       }
     }
 
-    message.reply(
-      "Looks like you aren't playing. Use the **!join** command to join in!"
-    );
+    message.reply("Looks like you aren't playing. Use the **!join** command to join in!")
   },
-};
+}
+
+/*
+  const ayy = client.emojis.cache.find((emoji) => emoji.name === 'ether')
+  message.reply(`${ayy} d`)
+*/

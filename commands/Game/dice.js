@@ -1,92 +1,107 @@
-const fs = require("fs");
-const commaNumber = require("comma-number");
-const TimeAgo = require("javascript-time-ago");
-const en = require("javascript-time-ago/locale/en");
-TimeAgo.addDefaultLocale(en);
-const timeAgo = new TimeAgo("en-US");
+const TimeAgo = require('javascript-time-ago')
+const en = require('javascript-time-ago/locale/en')
+TimeAgo.addDefaultLocale(en)
+const File = require('../../scripts/file')
 
 module.exports = {
-  name: "dice",
-  description: "",
+  name: 'dice',
+  description: '',
   aliases: [],
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const data = JSON.parse(
-      fs.readFileSync("./data/players.json", {
-        encoding: "utf8",
-        flag: "r",
-      })
-    );
+    const data = File.read()
 
-    let players = data.players;
+    if (args.length === 1 && args[0] === 'stats') {
+      let statsTotal = data.stats.dice.wins + data.stats.dice.losses + data.stats.dice.draws
+      let wins = data.stats.dice.wins
+      let draws = data.stats.dice.draws
+      let losses = data.stats.dice.losses
+      message.reply(
+        `**Wins:** ${wins} (${((wins / statsTotal) * 100).toFixed(2)}%)    **Draws:** ${draws} (${((draws / statsTotal) * 100).toFixed(
+          2
+        )}%)    **Losses:** ${losses} (${((losses / statsTotal) * 100).toFixed(2)}%)`
+      )
+      return
+    }
+
+    let players = data.players
     for (let i = 0; i < players.length; i++) {
-      if (players[i].id === message.author.id) {
-        let player = players[i];
-        function containsOnlyNumbers(str) {
-          return /^\d+$/.test(str);
+      if (players[i].id === message.author.id && args.length === 1) {
+        let player = players[i]
+
+        let bet = args[0]
+        if (bet === 'all') {
+          bet = players[i].coins
         }
 
-        let bet = args[0];
-        if (player.coins < bet) {
-          message.reply("You can't afford that you broke fool!");
-          return;
+        function containsOnlyNumbers(str) {
+          return /^\d+$/.test(str)
         }
 
         if (args.length !== 1) {
-          message.reply("Please include your bet like so: `!dice 50`");
-          return;
-        } else if (!containsOnlyNumbers(args[0])) {
-          message.reply("That is not a valid number...");
+          message.reply('Please include your bet like so: `!dice 50`')
+          return
+        } else if (!containsOnlyNumbers(args[0]) && args[0] !== 'all') {
+          message.reply('That is not a valid number...')
+          return
+        }
+        console.log(bet)
+        console.log(player.coins)
+        Math.floor(bet)
+        if (player.coins < bet) {
+          message.reply("You can't afford that you broke fool!")
+          return
         }
 
-        let playerRoll = [
-          Math.floor(Math.random() * 6) + 1,
-          Math.floor(Math.random() * 6) + 1,
-        ];
-        let computerRoll = [
-          Math.floor(Math.random() * 6) + 1,
-          Math.floor(Math.random() * 6) + 1,
-        ];
+        let playerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
+        let computerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
 
-        let playerTotal = playerRoll[0] + playerRoll[1];
-        let computerTotal = computerRoll[0] + computerRoll[1];
-        let total = 0;
-        let outcomeText =
-          "You have **DRAWN** and have recieved :coin: " + bet + " back.";
+        let playerTotal = playerRoll[0] + playerRoll[1]
+        let computerTotal = computerRoll[0] + computerRoll[1]
+        let total = 0
+        let outcomeText = 'You have **DRAWN** and have recieved :coin: ` ' + parseFloat(bet).toFixed(2) + ' ` back.'
 
         if (playerTotal > computerTotal) {
-          total = bet;
-          outcomeText = "You have **WON** and gain :coin: " + bet + ".";
+          data.stats.dice.wins += 1
+          if (playerRoll[0] === playerRoll[1]) {
+            total = bet * 2
+            data.players[i].coinsTotal = parseFloat(data.players[i].coinsTotal) + parseFloat(total)
+            outcomeText = 'You have **WON** and gain :coin: ` ' + parseFloat(bet * 2).toFixed(2) + ' ` (Double your bet for **SNAKEY EYES**)'
+          } else {
+            total = bet
+            data.players[i].coinsTotal = parseFloat(data.players[i].coinsTotal) + parseFloat(total)
+            outcomeText = 'You have **WON** and gain :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
+          }
         } else if (playerTotal < computerTotal) {
-          total = -bet;
-          outcomeText = "You have **LOST** and lose :coin: " + bet + ".";
+          data.stats.dice.losses += 1
+          total = -bet
+          outcomeText = 'You have **LOST** and lose :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
+        } else {
+          data.stats.dice.draws += 1
         }
 
         message.reply(
-          "You roll :game_die: **" +
+          'You roll :game_die: **' +
             playerRoll[0] +
-            "** and :game_die: **" +
+            '** and :game_die: **' +
             playerRoll[1] +
-            "**" +
-            "\nThey roll :game_die: **" +
+            '**' +
+            '\nThey roll :game_die: **' +
             computerRoll[0] +
-            "** and :game_die: **" +
+            '** and :game_die: **' +
             computerRoll[1] +
-            "**" +
-            "\n\n" +
+            '**' +
+            '\n\n' +
             outcomeText
-        );
+        )
 
-        data.players[i].coins =
-          parseFloat(data.players[i].coins) + parseFloat(total);
-        fs.writeFileSync("./data/players.json", JSON.stringify(data), {
-          encoding: "utf8",
-          mode: 0o666,
-        });
+        data.players[i].coins = parseFloat(data.players[i].coins) + parseFloat(total)
 
-        return;
+        File.write(data)
+
+        return
       }
     }
   },
-};
+}

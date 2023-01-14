@@ -1,25 +1,19 @@
-const fs = require("fs");
+const File = require('../../scripts/file')
 
 module.exports = {
-  name: "join",
-  description: "",
-  aliases: ["j"],
+  name: 'join',
+  description: '',
+  aliases: ['j'],
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const data = JSON.parse(
-      fs.readFileSync("./data/players.json", {
-        encoding: "utf8",
-        flag: "r",
-      })
-    );
+    const data = File.read()
 
-    let players = data.players;
-    let player;
+    let players = data.players
     for (let i = 0; i < players.length; i++) {
       if (players[i].id === message.author.id) {
-        message.reply("Looks like you've already joined the game, silly!");
-        return;
+        message.reply("Looks like you've already joined the game, silly!")
+        return
       }
     }
 
@@ -27,17 +21,14 @@ module.exports = {
       id: message.author.id,
       name: message.author.displayName,
       coins: 0.0,
-      gems: 0,
+      coinsTotal: 0.0,
+      prestige: 0,
+      prestigePoints: 0,
       boost: 0.0,
-      lastCheck: new Date(),
-      basePerSecond: 0.1,
-    });
+    })
 
-    fs.writeFileSync("./data/players.json", JSON.stringify(data), {
-      encoding: "utf8",
-      mode: 0o666,
-    });
+    File.write(data)
 
-    message.reply("You have joined in on Idle Lite!");
+    message.reply('You have joined in on Idle Lite!')
   },
-};
+}
