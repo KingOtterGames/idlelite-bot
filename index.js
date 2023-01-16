@@ -9,9 +9,14 @@ const loadJobs = require('./scripts/loaders/loadJobs')
 const express = require('express')
 const app = express()
 const port = 8080
+const File = require('./scripts/file')
 
 app.get('/', (req, res) => {
   res.status(200).send('Healthy code!')
+})
+
+app.get('/player-data', (req, res) => {
+  res.status(200).json(File.read())
 })
 
 app.listen(port, () => {

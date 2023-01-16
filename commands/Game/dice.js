@@ -2,6 +2,7 @@ const TimeAgo = require('javascript-time-ago')
 const en = require('javascript-time-ago/locale/en')
 TimeAgo.addDefaultLocale(en)
 const File = require('../../scripts/file')
+const Calculations = require('../../scripts/helpers/calculations')
 
 module.exports = {
   name: 'dice',
@@ -29,10 +30,12 @@ module.exports = {
     for (let i = 0; i < players.length; i++) {
       if (players[i].id === message.author.id && args.length === 1) {
         let player = players[i]
+        let coins = Calculations.currentCoins(message.author.id)
+        console.log(coins)
 
         let bet = args[0]
         if (bet === 'all') {
-          bet = players[i].coins
+          bet = coins
         }
 
         function containsOnlyNumbers(str) {
@@ -46,10 +49,9 @@ module.exports = {
           message.reply('That is not a valid number...')
           return
         }
-        console.log(bet)
-        console.log(player.coins)
+
         Math.floor(bet)
-        if (player.coins < bet) {
+        if (coins < bet) {
           message.reply("You can't afford that you broke fool!")
           return
         }
@@ -96,9 +98,18 @@ module.exports = {
             outcomeText
         )
 
-        data.players[i].coins = parseFloat(data.players[i].coins) + parseFloat(total)
-
+        data.players[i].coins = parseFloat(coins) + parseFloat(total)
+        data.players[i].lastCheck = new Date()
+        console.log('---' + data.players[i].coins)
         File.write(data)
+
+        const data2 = File.read()
+        const players2 = data2.players
+        for (let i = 0; i < players2.length; i++) {
+          if (players2[i].id === message.author.id && args.length === 1) {
+            console.log('---' + data2.players[i].coins)
+          }
+        }
 
         return
       }

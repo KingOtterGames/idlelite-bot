@@ -1,5 +1,6 @@
 const commaNumber = require('comma-number')
 const File = require('../../scripts/file')
+const Calculations = require('../../scripts/helpers/calculations')
 
 module.exports = {
   name: 'stats',
@@ -14,18 +15,14 @@ module.exports = {
     for (let i = 0; i < players.length; i++) {
       if (players[i].id === message.author.id) {
         let player = players[i]
+
+        let coins = Calculations.currentCoins(message.author.id)
+        let boostCost = Calculations.boostCost(data.players[i].boost)
         data.players[i].lastCheck = new Date()
-
-        File.write(data)
-
-        let base = 100
-        let count = data.players[i].boost + 1
-        let rate = 2
-        let boostCost = (base * count ** rate).toFixed(2)
 
         message.reply(
           ':coin: ` ' +
-            commaNumber(data.players[i].coins.toFixed(2)) +
+            commaNumber(parseFloat(coins).toFixed(2)) +
             ' `         ' +
             ':arrow_double_up: ` x' +
             data.players[i].boost +
@@ -46,7 +43,7 @@ module.exports = {
             commaNumber(boostCost) +
             ' `**\n' +
             '**Next Prestige will gain you :gem: ` ' +
-            data.players[i].boost +
+            Calculations.gemsAtPrestige(data.players[i].boost) +
             ' `**'
         )
 

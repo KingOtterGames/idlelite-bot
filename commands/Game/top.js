@@ -4,7 +4,7 @@ module.exports = {
   name: 'top',
   description: '',
   aliases: ['t'],
-  disabled: false,
+  disabled: true,
   admin: false,
   execute: async (client, message, args) => {
     const data = File.read()
