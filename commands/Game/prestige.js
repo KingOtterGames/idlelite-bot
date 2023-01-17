@@ -24,7 +24,7 @@ module.exports = {
         }
 
         if (args.length === 1 && args[0] === 'confirm') {
-          data.players[i].prestigePoints += player.boost
+          data.players[i].prestigePoints += newGems
           data.players[i].prestige += 1
           data.players[i].coins = 0
           data.players[i].coinsTotal = 0
