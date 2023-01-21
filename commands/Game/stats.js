@@ -32,6 +32,7 @@ module.exports = {
 
     let coins = await Calculations.currentCoins(player)
     let boostCost = Calculations.boostCost(player.level)
+    let newGems = Calculations.gemsAtPrestige(player.level)
 
     const exampleEmbed = {
       color: 0x0099ff,
@@ -73,9 +74,14 @@ module.exports = {
           value: '` ' + player.prestige + ' `',
           inline: true,
         },
+        {
+          name: 'Ready to prestige?',
+          value: 'You will earn :gem: `' + newGems + '`, but will need to earn at least :gem: `' + player.prestige + '`.',
+          inline: false,
+        },
       ],
       footer: {
-        text: 'If you are ready to upgrade, type !upgrade',
+        text: 'If you are ready to level up, do !upgrade. This improves your idle rate. If you are ready to prestige, do !prestige.',
       },
     }
     message.reply({ embeds: [exampleEmbed] })

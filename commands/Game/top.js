@@ -3,6 +3,7 @@ const TimeAgo = require('javascript-time-ago')
 const en = require('javascript-time-ago/locale/en')
 TimeAgo.addDefaultLocale(en)
 const timeAgo = new TimeAgo('en-US')
+const commaNumber = require('comma-number')
 
 module.exports = {
   name: 'top',
@@ -19,9 +20,9 @@ module.exports = {
         name: (await client.users.fetch(players[i].id)).username,
         value:
           ':gem: ' +
-          players[i].prestigePoints +
+          commaNumber(players[i].prestigePoints) +
           '    :coin: ' +
-          players[i].coins.toFixed(0) +
+          commaNumber(players[i].coins.toFixed(0)) +
           ' *` active ' +
           timeAgo.format(new Date(players[i].lastCheck)) +
           ' `*',
