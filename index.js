@@ -10,6 +10,7 @@ const express = require('express')
 const app = express()
 const port = 8080
 const File = require('./scripts/file')
+const Db = require('./scripts/database/db')
 
 app.get('/', (req, res) => {
   res.status(200).send('Healthy code!')
@@ -54,6 +55,9 @@ client.aliases = new Collection()
 client.buttonActions = new Collection()
 
 const startup = async () => {
+  // Connect to Database
+  await Db.connect()
+
   // Load Events
   await loadEvents(client)
 

@@ -1,7 +1,8 @@
 const TimeAgo = require('javascript-time-ago')
+const commaNumber = require('comma-number')
 const en = require('javascript-time-ago/locale/en')
 TimeAgo.addDefaultLocale(en)
-const File = require('../../scripts/file')
+const Player = require('../../scripts/database/models/Player')
 const Calculations = require('../../scripts/helpers/calculations')
 
 module.exports = {
@@ -11,108 +12,212 @@ module.exports = {
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const data = File.read()
+    function containsOnlyNumbers(str) {
+      return /^\d+$/.test(str)
+    }
 
-    if (args.length === 1 && args[0] === 'stats') {
-      let statsTotal = data.stats.dice.wins + data.stats.dice.losses + data.stats.dice.draws
-      let wins = data.stats.dice.wins
-      let draws = data.stats.dice.draws
-      let losses = data.stats.dice.losses
-      message.reply(
-        `**Wins:** ${wins} (${((wins / statsTotal) * 100).toFixed(2)}%)    **Draws:** ${draws} (${((draws / statsTotal) * 100).toFixed(
-          2
-        )}%)    **Losses:** ${losses} (${((losses / statsTotal) * 100).toFixed(2)}%)`
-      )
+    if (args.length !== 1) {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Running Command',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Run Command',
+            value: 'Please include your bet like so: `!dice 50`',
+            inline: true,
+          },
+        ],
+      }
+      message.reply({ embeds: [exampleEmbed] })
+      return
+    } else if (!containsOnlyNumbers(args[0]) && args[0] !== 'all' && args[0] !== 'stats') {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Running Command',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Run Command',
+            value: 'That is not a valid number...',
+            inline: true,
+          },
+        ],
+      }
+      message.reply({ embeds: [exampleEmbed] })
+      return
+    } else if (parseInt(args[0]) == 0) {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Running Command',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Run Command',
+            value: "You can't gamble 0...",
+            inline: true,
+          },
+        ],
+      }
+      message.reply({ embeds: [exampleEmbed] })
       return
     }
 
-    let players = data.players
-    for (let i = 0; i < players.length; i++) {
-      if (players[i].id === message.author.id && args.length === 1) {
-        let player = players[i]
-        let coins = Calculations.currentCoins(message.author.id)
-        console.log(coins)
+    const player = await Player.findOne({ id: message.author.id })
 
-        let bet = args[0]
-        if (bet === 'all') {
-          bet = coins
-        }
-
-        function containsOnlyNumbers(str) {
-          return /^\d+$/.test(str)
-        }
-
-        if (args.length !== 1) {
-          message.reply('Please include your bet like so: `!dice 50`')
-          return
-        } else if (!containsOnlyNumbers(args[0]) && args[0] !== 'all') {
-          message.reply('That is not a valid number...')
-          return
-        }
-
-        Math.floor(bet)
-        if (coins < bet) {
-          message.reply("You can't afford that you broke fool!")
-          return
-        }
-
-        let playerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
-        let computerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
-
-        let playerTotal = playerRoll[0] + playerRoll[1]
-        let computerTotal = computerRoll[0] + computerRoll[1]
-        let total = 0
-        let outcomeText = 'You have **DRAWN** and have recieved :coin: ` ' + parseFloat(bet).toFixed(2) + ' ` back.'
-
-        if (playerTotal > computerTotal) {
-          data.stats.dice.wins += 1
-          if (playerRoll[0] === playerRoll[1]) {
-            total = bet * 2
-            data.players[i].coinsTotal = parseFloat(data.players[i].coinsTotal) + parseFloat(total)
-            outcomeText = 'You have **WON** and gain :coin: ` ' + parseFloat(bet * 2).toFixed(2) + ' ` (Double your bet for **SNAKEY EYES**)'
-          } else {
-            total = bet
-            data.players[i].coinsTotal = parseFloat(data.players[i].coinsTotal) + parseFloat(total)
-            outcomeText = 'You have **WON** and gain :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
-          }
-        } else if (playerTotal < computerTotal) {
-          data.stats.dice.losses += 1
-          total = -bet
-          outcomeText = 'You have **LOST** and lose :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
-        } else {
-          data.stats.dice.draws += 1
-        }
-
-        message.reply(
-          'You roll :game_die: **' +
-            playerRoll[0] +
-            '** and :game_die: **' +
-            playerRoll[1] +
-            '**' +
-            '\nThey roll :game_die: **' +
-            computerRoll[0] +
-            '** and :game_die: **' +
-            computerRoll[1] +
-            '**' +
-            '\n\n' +
-            outcomeText
-        )
-
-        data.players[i].coins = parseFloat(coins) + parseFloat(total)
-        data.players[i].lastCheck = new Date()
-        console.log('---' + data.players[i].coins)
-        File.write(data)
-
-        const data2 = File.read()
-        const players2 = data2.players
-        for (let i = 0; i < players2.length; i++) {
-          if (players2[i].id === message.author.id && args.length === 1) {
-            console.log('---' + data2.players[i].coins)
-          }
-        }
-
-        return
+    // If player isn't found
+    if (!player) {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Running Command',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Run Command',
+            value: "Looks like you aren't playing. Use the **!join** command to join in!",
+            inline: true,
+          },
+        ],
       }
+      message.reply({ embeds: [exampleEmbed] })
+      return
     }
+
+    // Formatter from old data
+    let dice
+    if (player.dice?.length > 0) {
+      dice = player.dice
+    } else {
+      dice = [0, 0, 0, 0]
+    }
+
+    let bet = args[0]
+    if (bet === 'stats') {
+      let diceTotal = dice[0] + dice[1] + dice[2] + dice[3]
+      const exampleEmbed = {
+        color: '0xfc2803',
+        author: {
+          name: 'Your Dice Stats',
+        },
+        fields: [
+          {
+            name: ':trophy: Wins',
+            value: '' + dice[0] + ' ***(' + (dice[0] / diceTotal) * 100 + '%)***',
+            inline: true,
+          },
+          {
+            name: ':handshake: Draws',
+            value: '' + dice[2] + ' ***(' + (dice[2] / diceTotal) * 100 + '%)***',
+            inline: true,
+          },
+          {
+            name: ':firecracker: Losses',
+            value: '' + dice[3] + ' ***(' + (dice[3] / diceTotal) * 100 + '%)***',
+            inline: true,
+          },
+
+          {
+            name: ':snake: Snake Eyes',
+            value: '' + dice[1] + ' ***(' + (dice[1] / diceTotal) * 100 + '%)***',
+            inline: true,
+          },
+        ],
+        footer: {
+          text: 'These stats are based on your total dice rolls, even across prestiges.',
+        },
+      }
+      message.reply({ embeds: [exampleEmbed] })
+      return
+    }
+    let coins = await Calculations.currentCoins(player)
+    if (bet === 'all') {
+      bet = coins
+    }
+
+    Math.floor(bet)
+    if (coins < bet) {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Running Command',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Run Command',
+            value: "Looks like you are broke or can't afford that... Wait for your :coins: to come in.",
+            inline: true,
+          },
+        ],
+      }
+      message.reply({ embeds: [exampleEmbed] })
+      return
+    }
+
+    let playerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
+    let computerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
+
+    let playerTotal = playerRoll[0] + playerRoll[1]
+    let computerTotal = computerRoll[0] + computerRoll[1]
+    let total = 0
+    let outcomeText = 'You have :handshake: **DRAWN** and have recieved :coin: ` ' + parseFloat(bet).toFixed(2) + ' ` back.'
+
+    console.log(dice)
+    if (playerTotal > computerTotal) {
+      if (playerRoll[0] === playerRoll[1]) {
+        dice[1] += 1
+        total = bet * 2
+        outcomeText = 'You have :trophy: **WON** with :snake: **SNAKE EYES**, for a total of :coin: ` ' + parseFloat(bet * 2).toFixed(2) + ' `'
+      } else {
+        dice[0] += 1
+        total = bet
+        outcomeText = 'You have :trophy: **WON** a total of :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
+      }
+    } else if (playerTotal < computerTotal) {
+      dice[3] += 1
+      total = -bet
+      outcomeText = 'You have :firecracker: **LOST** a total of :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
+    } else {
+      dice[2] += 1
+    }
+
+    console.log(dice)
+
+    await Player.findOneAndUpdate({ id: player.id }, { coins: parseFloat(coins) + parseFloat(total), lastCheck: new Date(), dice: dice })
+
+    let color = 'fc2803'
+    if (total > 0) {
+      color = '04c904'
+    } else if (total === 0) {
+      color = 'd1ca00'
+    }
+    const exampleEmbed = {
+      color: '0x' + color,
+      author: {
+        name: 'Your Dice Stats',
+      },
+      fields: [
+        {
+          name: ':game_die: Your Rolls',
+          value: '***' + playerRoll[0] + '*** + ***' + playerRoll[1] + '*** = ***' + (playerRoll[0] + playerRoll[1]) + '***',
+          inline: true,
+        },
+        {
+          name: ':game_die: Computer Rolls',
+          value: '***' + computerRoll[0] + '*** + ***' + computerRoll[1] + '*** = ***' + (computerRoll[0] + computerRoll[1]) + '***',
+          inline: true,
+        },
+        {
+          name: 'Results',
+          value: outcomeText + '\nNew Balance: :coin: ` ' + commaNumber((parseFloat(coins) + parseFloat(total)).toFixed(2)) + ' `',
+          inline: false,
+        },
+      ],
+    }
+    message.reply({ embeds: [exampleEmbed] })
+    return
   },
 }

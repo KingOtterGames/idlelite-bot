@@ -1,3 +1,4 @@
+const Player = require('../../scripts/database/models/Player')
 const File = require('../../scripts/file')
 
 module.exports = {
@@ -7,28 +8,52 @@ module.exports = {
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const data = File.read()
+    const player = await Player.findOne({ id: message.author.id })
 
-    let players = data.players
-    for (let i = 0; i < players.length; i++) {
-      if (players[i].id === message.author.id) {
-        message.reply("Looks like you've already joined the game, silly!")
-        return
+    // If player isn't found
+    if (player) {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Joining Idle Lite',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Join',
+            value: 'It seems as if you are already playing. If you think this is an error, please ping @braymen',
+            inline: true,
+          },
+        ],
       }
+      message.reply({ embeds: [exampleEmbed] })
+      return
     }
 
-    data.players.push({
+    await Player.create({
       id: message.author.id,
-      name: message.author.displayName,
       coins: 0.0,
       coinsTotal: 0.0,
       prestige: 0,
       prestigePoints: 0,
-      boost: 0.0,
+      level: 0,
+      lastCheck: new Date(),
+      dice: [0, 0, 0, 0],
     })
 
-    File.write(data)
-
-    message.reply('You have joined in on Idle Lite!')
+    const exampleEmbed = {
+      color: '0x6803ff',
+      author: {
+        name: 'Joining Idle Lite',
+      },
+      fields: [
+        {
+          name: ':white_check_mark: Successfully Joined Game',
+          value: 'Welcome to Idle Lite, Keeper! Begin your journey, reading the guide in <#1063883970363801671>.',
+          inline: true,
+        },
+      ],
+    }
+    message.reply({ embeds: [exampleEmbed] })
+    return
   },
 }

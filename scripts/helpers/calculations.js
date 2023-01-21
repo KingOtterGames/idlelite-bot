@@ -1,4 +1,4 @@
-const File = require('../file')
+const Player = require('../database/models/Player')
 
 const boostCost = (boostLevel) => {
   let base = 100
@@ -8,23 +8,10 @@ const boostCost = (boostLevel) => {
   return boostCost
 }
 
-const currentCoins = (playerID) => {
-  let data = File.read()
-  let newCoins = 0
-  let players = data.players
-  for (let i = 0; i < data.players.length; i++) {
-    if (players[i].id === playerID) {
-      let lastCheck = (new Date() - new Date(players[i].lastCheck)) / 1000
-      let player = data.players[i]
-      let addedCoins = 0.02777777777 * (player.boost + 1) * (player.prestigePoints * 0.01 + 1) * lastCheck
-      data.players[i].coins += addedCoins
-      data.players[i].coinsTotal += addedCoins
-      data.players[i].lastCheck = new Date()
-      newCoins = data.players[i].coins
-    }
-  }
-
-  File.write(data)
+const currentCoins = async (player) => {
+  let lastCheck = (new Date() - new Date(player.lastCheck)) / 1000
+  let newCoins = player.coins + 0.02777777777 * (player.level + 1) * (player.prestigePoints * 0.01 + 1) * lastCheck
+  await Player.findOneAndUpdate({ id: player.id }, { coins: newCoins, lastCheck: new Date() })
   return newCoins
 }
 

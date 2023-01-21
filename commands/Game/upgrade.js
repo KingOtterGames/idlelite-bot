@@ -1,7 +1,7 @@
 const TimeAgo = require('javascript-time-ago')
 const en = require('javascript-time-ago/locale/en')
+const Player = require('../../scripts/database/models/Player')
 TimeAgo.addDefaultLocale(en)
-const File = require('../../scripts/file')
 const Calculations = require('../../scripts/helpers/calculations')
 
 module.exports = {
@@ -11,30 +11,66 @@ module.exports = {
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const data = File.read()
+    const player = await Player.findOne({ id: message.author.id })
 
-    let players = data.players
-    for (let i = 0; i < players.length; i++) {
-      if (players[i].id === message.author.id) {
-        let coins = Calculations.currentCoins(message.author.id)
-        let boostCost = Calculations.boostCost(data.players[i].boost)
-        data.players[i].lastCheck = new Date()
-
-        if (coins < boostCost) {
-          message.reply("Looks like you aren't rich enough yet. You need :coin: " + (boostCost - coins).toFixed(2) + ' more.')
-          return
-        } else {
-          data.players[i].coins = coins - boostCost
-          data.players[i].boost += 1
-          message.reply('You have upgraded your :arrow_double_up: to ' + data.players[i].boost + '!')
-        }
-
-        File.write(data)
-
-        return
+    // If player isn't found
+    if (!player) {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Running Command',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Run Command',
+            value: "Looks like you aren't playing. Use the **!join** command to join in!",
+            inline: true,
+          },
+        ],
       }
+      message.reply({ embeds: [exampleEmbed] })
+      return
     }
 
-    message.reply("Looks like you aren't playing. Use the **!join** command to join in!")
+    let coins = await Calculations.currentCoins(player)
+    let boostCost = Calculations.boostCost(player.level)
+
+    if (coins < boostCost) {
+      const exampleEmbed = {
+        color: '0xf56702',
+        author: {
+          name: 'Leveling Up!',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Level Up',
+            value: "Looks like you aren't rich enough yet. You need :coin: ` " + (boostCost - coins).toFixed(2) + ' ` more.',
+            inline: true,
+          },
+        ],
+      }
+      message.reply({ embeds: [exampleEmbed] })
+      return
+    } else {
+      await Player.findOneAndUpdate({ id: player.id }, { coins: coins - boostCost, level: player.level + 1, lastCheck: new Date() })
+      const exampleEmbed = {
+        color: '0xf56702',
+        author: {
+          name: 'Leveling Up!',
+        },
+        fields: [
+          {
+            name: ':crossed_swords: Successfully Leveled Up!',
+            value: 'You are now level ` ' + (player.level + 1) + ' `',
+            inline: true,
+          },
+        ],
+        footer: {
+          text: 'Each Level, gives you a bonus 100 more coins per hour.',
+        },
+      }
+      message.reply({ embeds: [exampleEmbed] })
+      return
+    }
   },
 }

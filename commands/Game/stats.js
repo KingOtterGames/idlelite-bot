@@ -1,7 +1,7 @@
 const commaNumber = require('comma-number')
-const File = require('../../scripts/file')
+const Player = require('../../scripts/database/models/Player')
 const Calculations = require('../../scripts/helpers/calculations')
-
+// https://discordjs.guide/popular-topics/embeds.html#attaching-images
 module.exports = {
   name: 'stats',
   description: '',
@@ -9,49 +9,77 @@ module.exports = {
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const data = File.read()
+    const player = await Player.findOne({ id: message.author.id })
 
-    let players = data.players
-    for (let i = 0; i < players.length; i++) {
-      if (players[i].id === message.author.id) {
-        let player = players[i]
-
-        let coins = Calculations.currentCoins(message.author.id)
-        let boostCost = Calculations.boostCost(data.players[i].boost)
-        data.players[i].lastCheck = new Date()
-
-        message.reply(
-          ':coin: ` ' +
-            commaNumber(parseFloat(coins).toFixed(2)) +
-            ' `         ' +
-            ':arrow_double_up: ` x' +
-            data.players[i].boost +
-            ' `         ' +
-            ':alarm_clock: ` ' +
-            commaNumber((0.02777777777 * (player.boost + 1) * 60 * 60 * (player.prestigePoints * 0.01 + 1)).toFixed(2)) +
-            ' / hr `' +
-            '         ' +
-            ':recycle: ` ' +
-            player.prestige +
-            ' `         ' +
-            ':gem: ` ' +
-            data.players[i].prestigePoints +
-            ' (+' +
-            (data.players[i].prestigePoints * 0.01).toFixed(2) +
-            ') `' +
-            '\n\n**Next :arrow_double_up: cost :coin: ` ' +
-            commaNumber(boostCost) +
-            ' `**\n' +
-            '**Next Prestige will gain you :gem: ` ' +
-            Calculations.gemsAtPrestige(data.players[i].boost) +
-            ' `**'
-        )
-
-        return
+    // If player isn't found
+    if (!player) {
+      const exampleEmbed = {
+        color: '0xede100',
+        author: {
+          name: 'Running Command',
+        },
+        fields: [
+          {
+            name: ':warning: Failed to Run Command',
+            value: "Looks like you aren't playing. Use the **!join** command to join in!",
+            inline: true,
+          },
+        ],
       }
+      message.reply({ embeds: [exampleEmbed] })
+      return
     }
 
-    message.reply("Looks like you aren't playing. Use the **!join** command to join in!")
+    let coins = await Calculations.currentCoins(player)
+    let boostCost = Calculations.boostCost(player.level)
+
+    const exampleEmbed = {
+      color: 0x0099ff,
+      author: {
+        name: 'Player Statistics',
+      },
+      // description: 'A basic overview of your currencies, stats, and more.',
+      thumbnail: {
+        url: message.author.displayAvatarURL(),
+      },
+      fields: [
+        {
+          name: ':crossed_swords: Player Level',
+          value: '` ' + player.level + ' `',
+          inline: true,
+        },
+        {
+          name: ':coin: Coins',
+          value: '` ' + commaNumber(parseFloat(coins).toFixed(2)) + ' `',
+          inline: true,
+        },
+        {
+          name: ':gem: Gems',
+          value: '` ' + player.prestigePoints + ' `',
+          inline: true,
+        },
+        {
+          name: ':alarm_clock: Hourly Rate',
+          value: '` ' + commaNumber((0.02777777777 * (player.level + 1) * 60 * 60 * (player.prestigePoints * 0.01 + 1)).toFixed(2)) + ' / hr' + ' `',
+          inline: true,
+        },
+        {
+          name: ':arrow_double_up:  Level Up Cost',
+          value: '` ' + commaNumber(boostCost) + ' `',
+          inline: true,
+        },
+        {
+          name: ':recycle:  Prestiges',
+          value: '` ' + player.prestige + ' `',
+          inline: true,
+        },
+      ],
+      footer: {
+        text: 'If you are ready to upgrade, type !upgrade',
+      },
+    }
+    message.reply({ embeds: [exampleEmbed] })
+    return
   },
 }
 
