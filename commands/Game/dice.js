@@ -99,30 +99,30 @@ module.exports = {
     if (bet === 'stats') {
       let diceTotal = dice[0] + dice[1] + dice[2] + dice[3]
       const exampleEmbed = {
-        color: '0xfc2803',
+        color: '0x0099ff',
         author: {
           name: 'Your Dice Stats',
         },
         fields: [
           {
             name: ':trophy: Wins',
-            value: '' + dice[0] + ' ***(' + (dice[0] / diceTotal) * 100 + '%)***',
+            value: '' + dice[0] + ' ***(' + ((dice[0] / diceTotal) * 100).toFixed(2) + '%)***',
             inline: true,
           },
           {
             name: ':handshake: Draws',
-            value: '' + dice[2] + ' ***(' + (dice[2] / diceTotal) * 100 + '%)***',
+            value: '' + dice[2] + ' ***(' + ((dice[2] / diceTotal) * 100).toFixed(2) + '%)***',
             inline: true,
           },
           {
             name: ':firecracker: Losses',
-            value: '' + dice[3] + ' ***(' + (dice[3] / diceTotal) * 100 + '%)***',
+            value: '' + dice[3] + ' ***(' + ((dice[3] / diceTotal) * 100).toFixed(2) + '%)***',
             inline: true,
           },
 
           {
             name: ':snake: Snake Eyes',
-            value: '' + dice[1] + ' ***(' + (dice[1] / diceTotal) * 100 + '%)***',
+            value: '' + dice[1] + ' ***(' + ((dice[1] / diceTotal) * 100).toFixed(2) + '%)***',
             inline: true,
           },
         ],
