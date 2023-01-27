@@ -157,7 +157,7 @@ module.exports = {
     let playerTotal = playerRoll[0] + playerRoll[1]
     let computerTotal = computerRoll[0] + computerRoll[1]
     let total = 0
-    let outcomeText = 'You have :handshake: **DRAWN** and have recieved :coin: ` ' + parseFloat(bet).toFixed(2) + ' ` back.'
+    let outcomeText = 'You have :handshake: **DRAWN** and have lost :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
 
     if (playerTotal > computerTotal) {
       if (playerRoll[0] === playerRoll[1]) {
@@ -175,6 +175,7 @@ module.exports = {
       outcomeText = 'You have :firecracker: **LOST** a total of :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
     } else {
       dice[2] += 1
+      total = -bet
     }
 
     let rakeback = (player.class === 'rogue' ? 0.05 : 0.01) * parseFloat(bet)
