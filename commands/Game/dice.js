@@ -183,10 +183,7 @@ module.exports = {
       rakeback += parseFloat(player.rakeback)
     }
 
-    await Player.findOneAndUpdate(
-      { id: player.id },
-      { $inc: { coins: parseFloat(total), coinsTotal: total > 0 ? parseFloat(total) : 0 }, lastCheck: new Date(), dice: dice, rakeback: rakeback }
-    )
+    await Player.findOneAndUpdate({ id: player.id }, { $inc: { coins: parseFloat(total) }, lastCheck: new Date(), dice: dice, rakeback: rakeback })
 
     let color = 'fc2803'
     if (total > 0) {
