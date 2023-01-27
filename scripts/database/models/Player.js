@@ -11,6 +11,8 @@ const schema = new mongoose.Schema(
     level: Number,
     lastCheck: String,
     dice: [Number],
+    rakeback: Number,
+    class: String,
   },
   { collection: collectionName }
 )

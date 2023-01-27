@@ -106,7 +106,7 @@ module.exports = {
         fields: [
           {
             name: ':trophy: Wins',
-            value: '' + dice[0] + ' ***(' + ((dice[0] / diceTotal) * 100).toFixed(2) + '%)***',
+            value: '' + (dice[0] + dice[1]) + ' ***(' + (((dice[0] + dice[1]) / diceTotal) * 100).toFixed(2) + '%)***',
             inline: true,
           },
           {
@@ -117,12 +117,6 @@ module.exports = {
           {
             name: ':firecracker: Losses',
             value: '' + dice[3] + ' ***(' + ((dice[3] / diceTotal) * 100).toFixed(2) + '%)***',
-            inline: true,
-          },
-
-          {
-            name: ':snake: Snake Eyes',
-            value: '' + dice[1] + ' ***(' + ((dice[1] / diceTotal) * 100).toFixed(2) + '%)***',
             inline: true,
           },
         ],
@@ -165,7 +159,6 @@ module.exports = {
     let total = 0
     let outcomeText = 'You have :handshake: **DRAWN** and have recieved :coin: ` ' + parseFloat(bet).toFixed(2) + ' ` back.'
 
-    console.log(dice)
     if (playerTotal > computerTotal) {
       if (playerRoll[0] === playerRoll[1]) {
         dice[1] += 1
@@ -184,9 +177,15 @@ module.exports = {
       dice[2] += 1
     }
 
-    console.log(dice)
+    let rakeback = (player.class === 'rogue' ? 0.05 : 0.01) * parseFloat(bet)
+    if (player.rakeback) {
+      rakeback += parseFloat(player.rakeback)
+    }
 
-    await Player.findOneAndUpdate({ id: player.id }, { coins: parseFloat(coins) + parseFloat(total), lastCheck: new Date(), dice: dice })
+    await Player.findOneAndUpdate(
+      { id: player.id },
+      { $inc: { coins: parseFloat(total), coinsTotal: total > 0 ? parseFloat(total) : 0 }, lastCheck: new Date(), dice: dice, rakeback: rakeback }
+    )
 
     let color = 'fc2803'
     if (total > 0) {

@@ -37,7 +37,9 @@ module.exports = {
       prestigePoints: 0,
       level: 0,
       lastCheck: new Date(),
+      bags: 0,
       dice: [0, 0, 0, 0],
+      class: 'Noob',
     })
 
     const exampleEmbed = {

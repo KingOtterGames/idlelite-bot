@@ -32,7 +32,16 @@ module.exports = {
 
     let coins = await Calculations.currentCoins(player)
     let boostCost = Calculations.boostCost(player.level)
-    let newGems = Calculations.gemsAtPrestige(player.level)
+    let newGems = Calculations.gemsAtPrestige(player)
+
+    let classBuff = 'None'
+    if (player.class === 'warrior') {
+      classBuff = '1.3x higher idle gains'
+    } else if (player.class === 'rogue') {
+      classBuff = '5% Rakeback on bets (vs 1%)'
+    } else if (player.class === 'mage') {
+      classBuff = 'Gain Gems Every 5K, but Gem effect is .5%'
+    }
 
     const exampleEmbed = {
       color: 0x0099ff,
@@ -61,7 +70,20 @@ module.exports = {
         },
         {
           name: ':alarm_clock: Hourly Rate',
-          value: '` ' + commaNumber((0.02777777777 * (player.level + 1) * 60 * 60 * (player.prestigePoints * 0.01 + 1)).toFixed(2)) + ' / hr' + ' `',
+          value:
+            '` ' +
+            commaNumber(
+              (
+                (player.class === 'warrior' ? 1.3 : 1.0) *
+                0.0275 *
+                (player.level + 1) *
+                60 *
+                60 *
+                (player.prestigePoints * (player.class === 'mage' ? 0.005 : 0.01) + 1)
+              ).toFixed(2)
+            ) +
+            ' / hr' +
+            ' `',
           inline: true,
         },
         {
@@ -72,6 +94,16 @@ module.exports = {
         {
           name: ':recycle:  Prestiges',
           value: '` ' + player.prestige + ' `',
+          inline: true,
+        },
+        {
+          name: 'Class',
+          value: player.class ? player.class.charAt(0).toUpperCase() + player.class.slice(1) : 'None',
+          inline: true,
+        },
+        {
+          name: 'Effect',
+          value: classBuff,
           inline: true,
         },
         {

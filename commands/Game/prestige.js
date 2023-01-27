@@ -29,10 +29,9 @@ module.exports = {
       return
     }
 
-    let newGems = Calculations.gemsAtPrestige(player.level)
+    let newGems = Calculations.gemsAtPrestige(player)
 
-    let gemsNeeded = player.prestige
-    if (gemsNeeded > Calculations.gemsAtPrestige(player.level)) {
+    if (newGems < 1) {
       const exampleEmbed = {
         color: '0x02b4f5',
         author: {
@@ -41,7 +40,7 @@ module.exports = {
         fields: [
           {
             name: ':warning: Problem Prestiging',
-            value: 'Come back when you will at least earn :gem: ` ' + gemsNeeded + ' ` from prestiging!',
+            value: 'You will need to wait until you will at least earn :gem: `1`',
             inline: true,
           },
         ],
@@ -50,10 +49,37 @@ module.exports = {
       return
     }
 
-    if (args.length === 1 && args[0] === 'confirm') {
+    if (args.length >= 1 && args[0] === 'confirm') {
+      const classes = ['noob', 'warrior', 'rogue', 'mage']
+      if (args.length === 1 || !classes.includes(args[1].toLowerCase())) {
+        const exampleEmbed = {
+          color: '0x02b4f5',
+          author: {
+            name: 'Prestige',
+          },
+          fields: [
+            {
+              name: ':warning: Problem Prestiging',
+              value: 'Please choose a class. The command is `!prestige confirm [Class]`. The classes to choose from are: **Noob, Warrior, Rogue, Mage**.',
+              inline: true,
+            },
+          ],
+        }
+        message.reply({ embeds: [exampleEmbed] })
+        return
+      }
       await Player.findOneAndUpdate(
         { id: player.id },
-        { coins: 0.0, prestigePoints: player.prestigePoints + newGems, prestige: player.prestige + 1, level: 0, lastCheck: new Date() }
+        {
+          coins: 0.0,
+          prestigePoints: player.prestigePoints + newGems,
+          prestige: player.prestige + 1,
+          level: 0,
+          rakeback: 0,
+          coinsTotal: 0,
+          lastCheck: new Date(),
+          class: args[1].toLowerCase(),
+        }
       )
       const exampleEmbed = {
         color: '0x02b4f5',
@@ -77,28 +103,38 @@ module.exports = {
         },
         fields: [
           {
-            name: ':crossed_swords: Current Level',
-            value: '` ' + player.level + ' `',
-            inline: true,
-          },
-          {
             name: ':gem: Gems you will earn',
             value: '` ' + newGems + ' `',
             inline: true,
           },
           {
             name: 'Gems worth',
-            value: 'Each :gem: adds a bonus **1%** to your hourly idle rate',
+            value: 'Each :gem: adds a bonus **1%** to your hourly idle rate. Mages only **0.5%**.',
             inline: false,
           },
           {
-            name: ':star: Read to Prestige?',
-            value: 'Type `!prestige confirm` if you are ready to prestige and reset everything.',
+            name: ':star: Ready to Prestige?',
+            value: 'Type `!prestige confirm [Class]` if you are ready to prestige and reset everything.',
             inline: false,
+          },
+          {
+            name: 'Warrior Class',
+            value: '1.3x higher idle gains',
+            inline: true,
+          },
+          {
+            name: 'Rogue Class',
+            value: '5% Rakeback on bets (vs 1%)',
+            inline: true,
+          },
+          {
+            name: 'Mage Class',
+            value: 'Gain Gems Every 5K, but Gem effect is .5%',
+            inline: true,
           },
         ],
         footer: {
-          text: 'Every 5 player levels, you get an additional gem for each level. 1-5 you get 1 gem each, 6-10 you get 2 gems each, etc.',
+          text: 'For every 10K earned, you will gain 1 gem.',
         },
       }
       message.reply({ embeds: [exampleEmbed] })
