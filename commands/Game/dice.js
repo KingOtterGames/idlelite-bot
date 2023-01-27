@@ -192,7 +192,7 @@ module.exports = {
     if (total > 0) {
       color = '04c904'
     } else if (total === 0) {
-      color = 'd1ca00'
+      color = 'fc2803'
     }
     const exampleEmbed = {
       color: '0x' + color,
