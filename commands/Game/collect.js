@@ -60,7 +60,7 @@ module.exports = {
           },
         ],
         footer: {
-          text: 'Every bet, you get 1% of it back here as a reward. Rogues get 5%.',
+          text: 'Every bet, you get 1% of it back here as a reward. Rogues get 15%.',
         },
       }
       message.reply({ embeds: [exampleEmbed] })
