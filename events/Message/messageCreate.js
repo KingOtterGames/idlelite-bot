@@ -50,7 +50,7 @@ module.exports = async (message) => {
       // Remove User after Cooldown
       setTimeout(() => {
         talkedRecently.delete(message.author.id)
-      }, 1000)
+      }, 100)
     }
   } else {
     await alias(global.client, message, args.slice(1))

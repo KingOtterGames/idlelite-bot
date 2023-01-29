@@ -16,6 +16,13 @@ module.exports = {
       return /^\d+$/.test(str)
     }
 
+    function containsPercent(str) {
+      if (/^(\d+|(\.\d+))(\.\d+)?%$/.test(str)) {
+        return true
+      }
+      return false
+    }
+
     if (args.length !== 1) {
       const exampleEmbed = {
         color: '0xede100',
@@ -25,14 +32,14 @@ module.exports = {
         fields: [
           {
             name: ':warning: Failed to Run Command',
-            value: 'Please include your bet like so: `!dice 50`',
+            value: 'Please include your bet like so: `!dice 50` or `!dice 50%`',
             inline: true,
           },
         ],
       }
       message.reply({ embeds: [exampleEmbed] })
       return
-    } else if (!containsOnlyNumbers(args[0]) && args[0] !== 'all' && args[0] !== 'stats') {
+    } else if (!containsOnlyNumbers(args[0]) && args[0] !== 'all' && args[0] !== 'stats' && !containsPercent(args[0])) {
       const exampleEmbed = {
         color: '0xede100',
         author: {
@@ -96,6 +103,18 @@ module.exports = {
     }
 
     let bet = args[0]
+
+    if (containsPercent(bet)) {
+      let percent = parseFloat(bet.replace('%', '')) / 100.0
+
+      if (percent > 0 && percent <= 1) {
+        bet = player.coins * percent
+      } else {
+        message.reply('Invalid bounds for a percent bet... Needs to be between 0-100%')
+        return
+      }
+    }
+
     if (bet === 'stats') {
       let diceTotal = dice[0] + dice[1] + dice[2] + dice[3]
       const exampleEmbed = {
@@ -119,10 +138,17 @@ module.exports = {
             value: '' + dice[3] + ' ***(' + ((dice[3] / diceTotal) * 100).toFixed(2) + '%)***',
             inline: true,
           },
+          {
+            name: (player.diceCurrent.toFixed(2) > 0 ? '📈' : '📉') + ' Net (Current)',
+            value: '`' + commaNumber(player.diceCurrent.toFixed(2)) + '`',
+            inline: true,
+          },
+          {
+            name: (player.diceLifetime.toFixed(2) > 0 ? '📈' : '📉') + ' Net (Lifetime)',
+            value: '`' + commaNumber(player.diceLifetime.toFixed(2)) + '`',
+            inline: true,
+          },
         ],
-        footer: {
-          text: 'These stats are based on your total dice rolls, even across prestiges.',
-        },
       }
       message.reply({ embeds: [exampleEmbed] })
       return
@@ -151,45 +177,57 @@ module.exports = {
       return
     }
 
-    let playerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
-    let computerRoll = [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]
+    let diceSize = 10
+    let playerRoll = [Math.floor(Math.random() * diceSize) + 1, Math.floor(Math.random() * diceSize) + 1]
+    let computerRoll = [Math.floor(Math.random() * diceSize) + 1, Math.floor(Math.random() * diceSize) + 1]
 
     let playerTotal = playerRoll[0] + playerRoll[1]
     let computerTotal = computerRoll[0] + computerRoll[1]
     let total = 0
-    let outcomeText = 'You have :handshake: **DRAWN** and have lost :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
+    let outcomeText = 'You have :handshake: **DRAWN** and have gain back your :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
+
+    let winningsLifetime = player.diceLifetime || 0
+    let winningsCurrent = player.diceCurrent || 0
 
     if (playerTotal > computerTotal) {
       if (playerRoll[0] === playerRoll[1]) {
         dice[1] += 1
         total = bet * 2
+        winningsLifetime += parseFloat(bet * 2)
+        winningsCurrent += parseFloat(bet * 2)
         outcomeText = 'You have :trophy: **WON** with :snake: **SNAKE EYES**, for a total of :coin: ` ' + parseFloat(bet * 2).toFixed(2) + ' `'
       } else {
         dice[0] += 1
         total = bet
+        winningsLifetime += parseFloat(bet)
+        winningsCurrent += parseFloat(bet)
         outcomeText = 'You have :trophy: **WON** a total of :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
       }
     } else if (playerTotal < computerTotal) {
       dice[3] += 1
       total = -bet
+      winningsLifetime -= parseFloat(bet)
+      winningsCurrent -= parseFloat(bet)
       outcomeText = 'You have :firecracker: **LOST** a total of :coin: ` ' + parseFloat(bet).toFixed(2) + ' `'
     } else {
       dice[2] += 1
-      total = -bet
     }
 
-    let rakeback = (player.class === 'rogue' ? 0.05 : 0.01) * parseFloat(bet)
+    let rakeback = (player.class === 'rogue' ? 0.15 : 0.01) * parseFloat(bet)
     if (player.rakeback) {
       rakeback += parseFloat(player.rakeback)
     }
 
-    await Player.findOneAndUpdate({ id: player.id }, { $inc: { coins: parseFloat(total) }, lastCheck: new Date(), dice: dice, rakeback: rakeback })
+    await Player.findOneAndUpdate(
+      { id: player.id },
+      { $inc: { coins: parseFloat(total) }, lastCheck: new Date(), dice, diceCurrent: winningsCurrent, diceLifetime: winningsLifetime, rakeback }
+    )
 
     let color = 'fc2803'
     if (total > 0) {
       color = '04c904'
     } else if (total === 0) {
-      color = 'fc2803'
+      color = 'fcba03'
     }
     const exampleEmbed = {
       color: '0x' + color,

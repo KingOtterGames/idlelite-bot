@@ -124,12 +124,12 @@ module.exports = {
           },
           {
             name: 'Rogue Class',
-            value: '5% Rakeback on bets (vs 1%)',
+            value: '15% Rakeback on bets (vs 1%)',
             inline: true,
           },
           {
             name: 'Mage Class',
-            value: 'Gain Gems Every 5K, but Gem effect is .5%',
+            value: 'Gain Gems Every 7K instead of 10K',
             inline: true,
           },
         ],

@@ -38,9 +38,9 @@ module.exports = {
     if (player.class === 'warrior') {
       classBuff = '1.3x higher idle gains'
     } else if (player.class === 'rogue') {
-      classBuff = '5% Rakeback on bets (vs 1%)'
+      classBuff = '15% Rakeback on bets (vs 1%)'
     } else if (player.class === 'mage') {
-      classBuff = 'Gain Gems Every 5K, but Gem effect is .5%'
+      classBuff = 'Gain Gems Every 7K instead of 10K'
     }
 
     const exampleEmbed = {
@@ -107,8 +107,17 @@ module.exports = {
           inline: true,
         },
         {
+          name: 'Idle Coins until Next Gem',
+          value:
+            ':coin: ' +
+            commaNumber(
+              parseFloat((player.class === 'mage' ? 7000.0 : 10000.0) - (player.coinsTotal % (player.class === 'mage' ? 7000.0 : 10000.0))).toFixed(2)
+            ),
+          inline: true,
+        },
+        {
           name: 'Ready to prestige?',
-          value: 'You will earn :gem: `' + newGems + '`, but will need to earn at least :gem: `' + player.prestige + '`.',
+          value: 'You will earn :gem: `' + newGems + '`.',
           inline: false,
         },
       ],
