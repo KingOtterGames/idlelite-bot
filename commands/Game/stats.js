@@ -30,7 +30,9 @@ module.exports = {
       return
     }
 
+    let oldCoins = player.coins
     let coins = await Calculations.currentCoins(player)
+    let coinsTotal = player.coinsTotal + coins - oldCoins
     let boostCost = Calculations.boostCost(player.level)
     let newGems = Calculations.gemsAtPrestige(player)
 
@@ -110,9 +112,7 @@ module.exports = {
           name: 'Idle Coins until Next Gem',
           value:
             ':coin: ' +
-            commaNumber(
-              parseFloat((player.class === 'mage' ? 7000.0 : 10000.0) - (player.coinsTotal % (player.class === 'mage' ? 7000.0 : 10000.0))).toFixed(2)
-            ),
+            commaNumber(parseFloat((player.class === 'mage' ? 7000.0 : 10000.0) - (coinsTotal % (player.class === 'mage' ? 7000.0 : 10000.0))).toFixed(2)),
           inline: true,
         },
         {
