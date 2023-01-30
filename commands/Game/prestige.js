@@ -109,7 +109,7 @@ module.exports = {
           },
           {
             name: 'Gems worth',
-            value: 'Each :gem: adds a bonus **1%** to your hourly idle rate. Mages only **0.5%**.',
+            value: 'Each :gem: adds a bonus **1%** to your hourly idle rate.',
             inline: false,
           },
           {
@@ -124,7 +124,7 @@ module.exports = {
           },
           {
             name: 'Rogue Class',
-            value: '15% Rakeback on bets (vs 1%)',
+            value: '10% Rakeback on bets (vs 1%)',
             inline: true,
           },
           {
@@ -133,9 +133,6 @@ module.exports = {
             inline: true,
           },
         ],
-        footer: {
-          text: 'For every 10K earned, you will gain 1 gem.',
-        },
       }
       message.reply({ embeds: [exampleEmbed] })
     }

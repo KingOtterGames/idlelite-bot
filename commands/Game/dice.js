@@ -213,7 +213,7 @@ module.exports = {
       dice[2] += 1
     }
 
-    let rakeback = (player.class === 'rogue' ? 0.15 : 0.01) * parseFloat(bet)
+    let rakeback = (player.class === 'rogue' ? 0.1 : 0.01) * parseFloat(bet)
     if (player.rakeback) {
       rakeback += parseFloat(player.rakeback)
     }

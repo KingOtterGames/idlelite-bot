@@ -46,7 +46,7 @@ module.exports = {
       }
       message.reply({ embeds: [exampleEmbed] })
     } else {
-      await Player.findOneAndUpdate({ id: player.id }, { $inc: { coins: rakeback, coinsTotal: rakeback }, rakeback: 0.0 })
+      await Player.findOneAndUpdate({ id: player.id }, { $inc: { coins: rakeback }, rakeback: 0.0 })
       const exampleEmbed = {
         color: '0x02b4f5',
         author: {
@@ -60,7 +60,7 @@ module.exports = {
           },
         ],
         footer: {
-          text: 'Every bet, you get 1% of it back here as a reward. Rogues get 15%.',
+          text: 'Every bet, you get 1% of it back here as a reward. Rogues get 10%.',
         },
       }
       message.reply({ embeds: [exampleEmbed] })

@@ -40,7 +40,7 @@ module.exports = {
     if (player.class === 'warrior') {
       classBuff = '1.3x higher idle gains'
     } else if (player.class === 'rogue') {
-      classBuff = '15% Rakeback on bets (vs 1%)'
+      classBuff = '10% Rakeback on bets (vs 1%)'
     } else if (player.class === 'mage') {
       classBuff = 'Gain Gems Every 7K instead of 10K'
     }
