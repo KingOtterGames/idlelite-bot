@@ -74,16 +74,7 @@ module.exports = {
           name: ':alarm_clock: Hourly Rate',
           value:
             '` ' +
-            commaNumber(
-              (
-                (player.class === 'warrior' ? 1.3 : 1.0) *
-                0.0275 *
-                (player.level + 1) *
-                60 *
-                60 *
-                (player.prestigePoints * (player.class === 'mage' ? 0.005 : 0.01) + 1)
-              ).toFixed(2)
-            ) +
+            commaNumber(((player.class === 'warrior' ? 1.3 : 1.0) * 0.0275 * (player.level + 1) * 60 * 60 * (player.prestigePoints + 1)).toFixed(2)) +
             ' / hr' +
             ' `',
           inline: true,
