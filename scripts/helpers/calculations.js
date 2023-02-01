@@ -10,7 +10,7 @@ const boostCost = (boostLevel) => {
 
 const currentCoins = async (player) => {
   let lastCheck = (new Date() - new Date(player.lastCheck)) / 1000
-  let newCoins = (player?.class === 'warrior' ? 1 : 1) * 0.0275 * (player.level + 1) * (player.prestigePoints * 0.01 + 1) * lastCheck
+  let newCoins = (player?.class === 'warrior' ? 1.3 : 1) * 0.0275 * (player.level + 1) * (player.prestigePoints * 0.01 + 1) * lastCheck
   await Player.findOneAndUpdate({ id: player.id }, { $inc: { coins: parseFloat(newCoins), coinsTotal: parseFloat(newCoins) }, lastCheck: new Date() })
   return player.coins + newCoins
 }
