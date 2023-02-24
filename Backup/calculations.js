@@ -1,4 +1,4 @@
-const Player = require('../database/models/Player')
+const Player = require('../scripts/database/models/Player')
 
 const boostCost = (boostLevel) => {
   let base = 100
@@ -9,10 +9,33 @@ const boostCost = (boostLevel) => {
 }
 
 const currentCoins = async (player) => {
+  if (!player.upgrades?.classes?.warrior) {
+    await Player.findOneAndUpdate(
+      { id: player.id },
+      {
+        upgrades: {
+          classes: {
+            warrior: {
+              current: 0,
+              max: 5,
+            },
+            mage: {
+              current: 0,
+              max: 5,
+            },
+            rogue: {
+              current: 0,
+              max: 5,
+            },
+          },
+        },
+      }
+    )
+  }
+
   let lastCheck = (new Date() - new Date(player.lastCheck)) / 1000
   let newCoins = (player?.class === 'warrior' ? 1.3 : 1) * 0.0275 * (player.level + 1) * (player.prestigePoints * 0.01 + 1) * lastCheck
-  await Player.findOneAndUpdate({ id: player.id }, { $inc: { coins: parseFloat(newCoins), coinsTotal: parseFloat(newCoins) }, lastCheck: new Date() })
-  return player.coins + newCoins
+  return newCoins
 }
 
 const gemsAtPrestige = (player) => {
