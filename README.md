@@ -59,3 +59,15 @@ For this template, I decided to do some magic and use recursion to find commands
 ## Support
 For support on this template or any other template in this organization, check out our community discord: https://discord.gg/wezq9R5Xtc
 
+
+[x] - Class 
+[x] - Collect
+[x] - Dice
+[x] - Join
+[x] - Level UP
+[x] - Prestige
+[x] - Stats
+[x] - Top
+[ ] - Upgrade
+
+[ ] - Data Migration

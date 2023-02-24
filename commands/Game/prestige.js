@@ -1,5 +1,9 @@
+const { getPlayer } = require('../../scripts/helpers/database')
 const Player = require('../../scripts/database/models/Player')
-const Calculations = require('../../scripts/helpers/calculations')
+const SimpleEmbed = require('../../scripts/helpers/simpleEmbed')
+const Check = require('../../scripts/helpers/checks')
+const Calc = require('../../scripts/helpers/calc')
+const Convert = require('../../scripts/helpers/conversions')
 
 module.exports = {
   name: 'prestige',
@@ -8,134 +12,65 @@ module.exports = {
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const player = await Player.findOne({ id: message.author.id })
+    // Return with helpful information
+    let sentences = [
+      'You need to earn at least :gem: ` 1 ` before you can prestige.',
+      'You earn gems through idle coin gains and other collected money (excluding gambling).',
+      'The standard rate is every :coin: ` 10,000 `, you earn a gem. Upgardes make it cheaper.',
+    ]
+    if (await Check.checkIfHelp(message, args, sentences, '!prestige', 'Prestige (Help)')) return
 
-    // If player isn't found
-    if (!player) {
-      const exampleEmbed = {
-        color: '0xede100',
-        author: {
-          name: 'Running Command',
-        },
-        fields: [
-          {
-            name: ':warning: Failed to Run Command',
-            value: "Looks like you aren't playing. Use the **!join** command to join in!",
-            inline: true,
-          },
-        ],
-      }
-      message.reply({ embeds: [exampleEmbed] })
-      return
-    }
+    // Get Player and Do Checks
+    const player = await getPlayer(message)
+    if (!player) return
 
-    let newGems = Calculations.gemsAtPrestige(player)
+    // Get Earned Gems
+    let gemsEarned = await Convert.wholeDisplay(await Calc.getEarnedGems(player))
+    let validClasses = ['none', 'warrior', 'rogue', 'mage']
 
-    if (newGems < 1) {
-      const exampleEmbed = {
-        color: '0x02b4f5',
-        author: {
-          name: 'Prestige',
-        },
-        fields: [
-          {
-            name: ':warning: Problem Prestiging',
-            value: 'You will need to wait until you will at least earn :gem: `1`',
-            inline: true,
-          },
-        ],
-      }
-      message.reply({ embeds: [exampleEmbed] })
-      return
-    }
-
-    if (args.length >= 1 && args[0] === 'confirm') {
-      const classes = ['noob', 'warrior', 'rogue', 'mage']
-      if (args.length === 1 || !classes.includes(args[1].toLowerCase())) {
-        const exampleEmbed = {
-          color: '0x02b4f5',
-          author: {
-            name: 'Prestige',
-          },
-          fields: [
-            {
-              name: ':warning: Problem Prestiging',
-              value: 'Please choose a class. The command is `!prestige confirm [Class]`. The classes to choose from are: **Noob, Warrior, Rogue, Mage**.',
-              inline: true,
-            },
-          ],
-        }
-        message.reply({ embeds: [exampleEmbed] })
-        return
-      }
-      await Player.findOneAndUpdate(
-        { id: player.id },
-        {
-          coins: 0.0,
-          prestigePoints: player.prestigePoints + newGems,
-          prestige: player.prestige + 1,
-          level: 0,
-          rakeback: 0,
-          coinsTotal: 0,
-          lastCheck: new Date(),
-          class: args[1].toLowerCase(),
-        }
+    if (args.length === 0) {
+      SimpleEmbed.log(
+        message,
+        '!prestige',
+        'Prestige',
+        'You will gain :gem: ` ' +
+          gemsEarned +
+          ' ` if you prestige now.\n\nIf you are ready, type **!prestige confirm [class]**\n\nValid classes include: **' +
+          validClasses.toString().replaceAll(',', ', ') +
+          '**',
+        'blue'
       )
-      const exampleEmbed = {
-        color: '0x02b4f5',
-        author: {
-          name: 'Prestige',
-        },
-        fields: [
-          {
-            name: ':white_check_mark: Prestige Complete!',
-            value: 'You have prestiged! Everything has been reset, except your new bonuses. You gained :gem: ` ' + newGems + ' `',
-            inline: true,
-          },
-        ],
-      }
-      message.reply({ embeds: [exampleEmbed] })
     } else {
-      const exampleEmbed = {
-        color: '0x02b4f5',
-        author: {
-          name: 'Prestige',
-        },
-        fields: [
+      if (gemsEarned < 1) {
+        SimpleEmbed.log(message, '!prestige', 'Prestige', 'You need to at least earn :gem: ` 1 ` before you can prestige.', 'red')
+      } else if (args.length === 2 && args[0] === 'confirm' && validClasses.includes(args[1].toLowerCase())) {
+        let gems = await Calc.getEarnedGems(player)
+        await Player.findOneAndUpdate(
+          { id: player.id },
           {
-            name: ':gem: Gems you will earn',
-            value: '` ' + newGems + ' `',
-            inline: true,
-          },
-          {
-            name: 'Gems worth',
-            value: 'Each :gem: adds a bonus **1%** to your hourly idle rate.',
-            inline: false,
-          },
-          {
-            name: ':star: Ready to Prestige?',
-            value: 'Type `!prestige confirm [Class]` if you are ready to prestige and reset everything.',
-            inline: false,
-          },
-          {
-            name: 'Warrior Class',
-            value: '1.3x higher idle gains',
-            inline: true,
-          },
-          {
-            name: 'Rogue Class',
-            value: '10% Rakeback on bets (vs 1%)',
-            inline: true,
-          },
-          {
-            name: 'Mage Class',
-            value: 'Gain Gems Every 7K instead of 10K',
-            inline: true,
-          },
-        ],
+            $inc: { 'currencies.gems.current': gems, 'currencies.gems.total': gems },
+            'currencies.coins.current': 0,
+            'currencies.coins.total': 0,
+            level: 0,
+            rakeback: 0,
+            'games.dice.earnings.current': 0,
+            lastCheck: new Date(),
+            class: args[1].toLowerCase(),
+          }
+        )
+
+        SimpleEmbed.log(message, '!prestige', 'Prestige', 'You have prestiged and have earned :gem: ` ' + gemsEarned + ' `.', 'green')
+      } else {
+        SimpleEmbed.log(
+          message,
+          '!prestige',
+          'Prestige',
+          'Make sure you type the command correctly. !prestige confirm [class] is the proper command.\n\nValid classes include: **' +
+            validClasses.toString().replaceAll(',', ', ') +
+            '**',
+          'red'
+        )
       }
-      message.reply({ embeds: [exampleEmbed] })
     }
-    return
   },
 }

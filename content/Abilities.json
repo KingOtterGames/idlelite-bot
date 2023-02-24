@@ -1,0 +1,19 @@
+{
+    "data": {
+        "none": {
+            "description": "You are just a normal citizen with nothing special"
+        },
+        "idleboost": {
+            "description": "Gain an increase on idle gains",
+            "mod": "Idle gained gold boosted ` {{MOD}}% `"
+        },
+        "rakeback": {
+            "description": "Gain an increase on rakeback from bets",
+            "mod": "Rakeback from bets is ` {{MOD}}% ` vs ` 2% `"
+        },
+        "cheapergems": {
+            "description": "Gain gems faster",
+            "mod": "Gems are gained at every **:coin: ` {{MOD}} `** vs **:coin: ` 10,000 `**"
+        }
+    }
+}

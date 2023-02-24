@@ -1,4 +1,10 @@
+const { getPlayer } = require('../../scripts/helpers/database')
 const Player = require('../../scripts/database/models/Player')
+const SimpleEmbed = require('../../scripts/helpers/simpleEmbed')
+const Check = require('../../scripts/helpers/checks')
+
+// Saved User List for Cooldowns
+const collectedRecently = {}
 
 module.exports = {
   name: 'collect',
@@ -7,65 +13,42 @@ module.exports = {
   disabled: false,
   admin: false,
   execute: async (client, message, args) => {
-    const player = await Player.findOne({ id: message.author.id })
+    // Return with helpful information
+    let sentences = [
+      'The rakeback program allows you to earn a portion of your money back on your bets.',
+      'The standard rate is 2%.',
+      'As a rogue, this can be upgraded and improved through class upgrades.',
+      'You can collect every 30 minutes.',
+    ]
+    if (await Check.checkIfHelp(message, args, sentences, '!collect', 'Rakeback Program (Help)')) return
 
-    // If player isn't found
-    if (!player) {
-      const exampleEmbed = {
-        color: '0xede100',
-        author: {
-          name: 'Running Command',
-        },
-        fields: [
-          {
-            name: ':warning: Failed to Run Command',
-            value: "Looks like you aren't playing. Use the **!join** command to join in!",
-            inline: true,
-          },
-        ],
+    // Cooldown Logic
+    if (collectedRecently[message.author.id]) {
+      let msNeeded = 1000 * 60 * 30 // 30 Minutes
+      if (new Date().getTime() - new Date(collectedRecently[message.author.id]).getTime() < msNeeded) {
+        let msPassed = new Date().getTime() - new Date(collectedRecently[message.author.id]).getTime()
+        let minutesUntil = Math.ceil((((msNeeded - msPassed) / msNeeded) * msNeeded) / 60000)
+        SimpleEmbed.error(message, 'Please wait ` ' + minutesUntil + ' ' + (minutesUntil <= 1 ? 'minute' : 'minutes') + ' ` before collecting again.')
+        return
+      } else {
+        delete collectedRecently[message.author.id]
       }
-      message.reply({ embeds: [exampleEmbed] })
-      return
     }
+
+    // Get Player and Do Checks
+    const player = await getPlayer(message)
+    if (!player) return
 
     let rakeback = player.rakeback
 
     if (!rakeback || rakeback === 0) {
-      const exampleEmbed = {
-        color: '0x02b4f5',
-        author: {
-          name: 'Collections Program',
-        },
-        fields: [
-          {
-            name: 'Rakeback',
-            value: 'You have nothing to collect...',
-            inline: true,
-          },
-        ],
-      }
-      message.reply({ embeds: [exampleEmbed] })
+      SimpleEmbed.log(message, '!collect', 'Rakeback Program', 'You have nothing to collect...', 'red')
     } else {
-      await Player.findOneAndUpdate({ id: player.id }, { $inc: { coins: rakeback }, rakeback: 0.0 })
-      const exampleEmbed = {
-        color: '0x02b4f5',
-        author: {
-          name: 'Collections Program',
-        },
-        fields: [
-          {
-            name: 'Rakeback',
-            value: 'You have collected :coin: ` ' + rakeback.toFixed(2) + ' ` as rakeback from your bets.',
-            inline: true,
-          },
-        ],
-        footer: {
-          text: 'Every bet, you get 1% of it back here as a reward. Rogues get 10%.',
-        },
-      }
-      message.reply({ embeds: [exampleEmbed] })
-    }
+      // Add User to Cooldown List
+      collectedRecently[message.author.id] = new Date()
 
-    return
+      await Player.findOneAndUpdate({ id: player.id }, { $inc: { 'currencies.coins.current': rakeback, 'currencies.coins.total': rakeback }, rakeback: 0 })
+      SimpleEmbed.log(message, '!collect', 'Rakeback Program', 'You have collected :coin:`' + rakeback.toFixed(2) + '` as rakeback from your bets.', 'green')
+    }
   },
 }
