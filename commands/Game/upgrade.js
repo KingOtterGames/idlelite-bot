@@ -45,7 +45,7 @@ module.exports = {
         SimpleEmbed.error(message, 'This upgrade is already maxed out.')
         return
       }
-      let cost = await Calc.getAbilityUpgradeCost(current)
+      let cost = await Calc.getAbilityUpgradeCost(current, args[1])
       if (!canAfford(cost)) {
         SimpleEmbed.error(message, 'You cannot afford this upgrade.')
         return

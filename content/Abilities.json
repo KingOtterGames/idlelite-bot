@@ -5,15 +5,19 @@
         },
         "idleboost": {
             "description": "Gain an increase on idle gains",
-            "mod": "Idle gained gold boosted ` {{MOD}}% `"
+            "mod": "Idle gained gold boosted `{{MOD}}%`"
         },
         "rakeback": {
             "description": "Gain an increase on rakeback from bets",
-            "mod": "Rakeback from bets is ` {{MOD}}% ` vs ` 2% `"
+            "mod": "Rakeback from bets is `{{MOD}}%` vs `2%`"
         },
         "cheapergems": {
             "description": "Gain gems faster",
-            "mod": "Gems are gained at every **:coin: ` {{MOD}} `** vs **:coin: ` 10,000 `**"
+            "mod": "Gems are gained at every **:coin:`{{MOD}}`** vs **:coin:`10,000`**"
+        },
+        "gemlimit": {
+            "description": "How many gems you get the effects of (1% for each)",
+            "mod": "Gems that effect your idle gains **:gem:`{{MOD}}`** vs **:gem:`1,000`**"
         }
     }
 }

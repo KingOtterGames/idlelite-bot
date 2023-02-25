@@ -41,6 +41,10 @@ const schema = new mongoose.Schema(
           current: { type: Number, default: 0 },
           max: { type: Number, default: 10 },
         },
+        gemlimit: {
+          current: { type: Number, default: 0 },
+          max: { type: Number, default: 10 },
+        },
       },
       gem: {
         limit: {

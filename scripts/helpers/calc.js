@@ -4,7 +4,7 @@ const getEarnedCoins = async (player) => {
     (await getAbilityModifier(player, 'idleboost')) *
     0.02777777777 *
     (player.level + 1) *
-    (Math.min(player.currencies.gems.current, 500) * 0.01 + 1) *
+    (Math.min(player.currencies.gems.total, await getAbilityModifier(player, 'gemlimit')) * 0.01 + 1) *
     lastCheck
   return newCoins
 }
@@ -29,7 +29,7 @@ const getHourlyRate = async (player) => {
     (player.level + 1) *
     60 *
     60 *
-    (Math.min(player.currencies.gems.current, 500) * 0.01 + 1)
+    (Math.min(player.currencies.gems.total, await getAbilityModifier(player, 'gemlimit')) * 0.01 + 1)
   ).toFixed(2)
 }
 
@@ -44,16 +44,22 @@ const getAbilityModifier = async (player, ability) => {
   let current = parseInt(Math.min(player.upgrades.ability[ability].current, max))
 
   if (ability === 'idleboost') {
-    return 1 + current * 0.05
+    return 1 + current * 0.1
   } else if (ability === 'rakeback') {
     return current * 0.01 + 0.02
   } else if (ability === 'cheapergems') {
     return 4000 * 0.1 * current
+  } else if (ability === 'gemlimit') {
+    return current * 500 + 1000
   }
 }
 
-const getAbilityUpgradeCost = async (level) => {
-  return (level + 1) * 100
+const getAbilityUpgradeCost = async (level, ability) => {
+  if (ability === 'gemlimit') {
+    return (level + 1) * 250
+  } else {
+    return (level + 1) * 100
+  }
 }
 
 module.exports = {

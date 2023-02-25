@@ -39,10 +39,12 @@ module.exports = {
         str += '\n\n***► Effect:** ' + AbilitiesJSON['rakeback'].mod.replace('{{MOD}}', mod * 100) + '*'
       } else if (ability === 'cheapergems') {
         str += '\n\n***► Effect:** ' + AbilitiesJSON['cheapergems'].mod.replace('{{MOD}}', Convert.wholeDisplay(10000 - mod)) + '*'
+      } else if (ability === 'gemlimit') {
+        str += '\n\n***► Effect:** ' + AbilitiesJSON['gemlimit'].mod.replace('{{MOD}}', Convert.wholeDisplay(mod)) + '*'
       }
       str +=
         '\n***► Upgrade Cost:** ' +
-        (current >= max ? 'Maxed out' : ':gem: ` ' + (await Calc.getAbilityUpgradeCost(current)) + ' ` (!upgrade ability ' + ability + ')') +
+        (current >= max ? 'Maxed out' : ':gem: ` ' + (await Calc.getAbilityUpgradeCost(current, ability)) + ' ` (!upgrade ability ' + ability + ')') +
         '*'
       return str
     }
@@ -69,6 +71,11 @@ module.exports = {
         {
           name: 'CheaperGems (Level ' + player.upgrades.ability.cheapergems.current + ')',
           value: await getLevelDisplayBar(player.upgrades.ability.cheapergems.current, player.upgrades.ability.cheapergems.max, 'cheapergems'),
+          inline: false,
+        },
+        {
+          name: 'GemLimit (Level ' + player.upgrades.ability.gemlimit.current + ')',
+          value: await getLevelDisplayBar(player.upgrades.ability.gemlimit.current, player.upgrades.ability.gemlimit.max, 'gemlimit'),
           inline: false,
         },
       ],
