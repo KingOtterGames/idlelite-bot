@@ -106,23 +106,22 @@ module.exports = {
       } else if (args[0] === 'all') {
         // Gamble with ALL
         bet = player.currencies.coins.current
-        if (isZero(bet)) return
-        if (!canAfford(bet)) return
       } else if (containsPercent(args[0])) {
         // Gamble a Percent
         bet = (parseFloat(args[0].replace('%', '')) / 100.0) * player.currencies.coins.current
-        if (isZero(bet)) return
-        if (!canAfford(bet)) return
       } else if (containsOnlyNumbers(args[0])) {
         // Gamble Specific Number
         bet = parseFloat(args[0])
-        if (isZero(bet)) return
-        if (!canAfford(bet)) return
       } else {
         // There is an isue
         SimpleEmbed.log(message, '!dice', 'Dice Game', 'Something is wrong with the way you typed this command.', 'red')
         return
       }
+
+      // Checks
+      if (isZero(bet)) return
+      if (!canAfford(bet)) return
+      if (bet < 0) return
 
       // Calculate gains
       let betString = await Convert.decimalDisplay(bet)
