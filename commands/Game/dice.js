@@ -40,7 +40,7 @@ module.exports = {
     }
 
     function canAfford(bet) {
-      if (bet > player.currencies.coins.current) {
+      if (bet > player.currencies.coins.current || bet < 0) {
         SimpleEmbed.log(message, '!dice', 'Dice Game', 'You cannot afford this bet.', 'red')
         return false
       }
@@ -121,7 +121,6 @@ module.exports = {
       // Checks
       if (isZero(bet)) return
       if (!canAfford(bet)) return
-      if (bet < 0) return
 
       // Calculate gains
       let betString = await Convert.decimalDisplay(bet)
