@@ -47,7 +47,7 @@ module.exports = {
       // Add User to Cooldown List
       collectedRecently[message.author.id] = new Date()
 
-      await Player.findOneAndUpdate({ id: player.id }, { $inc: { 'currencies.coins.current': rakeback, 'currencies.coins.total': rakeback }, rakeback: 0 })
+      await Player.findOneAndUpdate({ id: player.id }, { $inc: { 'currencies.coins.current': rakeback }, rakeback: 0 })
       SimpleEmbed.log(message, '!collect', 'Rakeback Program', 'You have collected :coin:`' + rakeback.toFixed(2) + '` as rakeback from your bets.', 'green')
     }
   },
