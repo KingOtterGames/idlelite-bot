@@ -106,9 +106,9 @@ module.exports = {
       } else if (args[0] === 'all') {
         // Gamble with ALL
         bet = player.currencies.coins.current
-      } else if (containsPercent(args[0])) {
-        // Gamble a Percent
-        bet = (parseFloat(args[0].replace('%', '')) / 100.0) * player.currencies.coins.current
+        // } else if (containsPercent(args[0])) {
+        //   // Gamble a Percent
+        //   bet = (parseFloat(args[0].replace('%', '')) / 100.0) * player.currencies.coins.current
       } else if (containsOnlyNumbers(args[0])) {
         // Gamble Specific Number
         bet = parseFloat(args[0])
