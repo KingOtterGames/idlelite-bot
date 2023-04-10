@@ -79,4 +79,5 @@ module.exports = {
   getIdleCoinsNeeded,
   getAbilityModifier,
   getAbilityUpgradeCost,
+  getCumulativeLevelUpCost
 }
