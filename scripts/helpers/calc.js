@@ -15,7 +15,7 @@ const getEarnedGems = async (player) => {
 }
 
 const sumOfSquares = async (n) => {
-  return n * (n+1) * (2n+1) / 6
+  return n * (n+1) * (2*n+1) / 6
 }
 
 const getCumulativeLevelUpCost = async (currentLevel, targetLevel) => {
